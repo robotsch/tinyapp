@@ -16,5 +16,8 @@
   "bugs": {
     "url": "https://github.com/robotsch/tinyapp/issues"
   },
-  "homepage": "https://github.com/robotsch/tinyapp#readme"
+  "homepage": "https://github.com/robotsch/tinyapp#readme",
+  "dependencies": {
+    "express": "^4.17.3"
+  }
 }
