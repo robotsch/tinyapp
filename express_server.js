@@ -23,8 +23,12 @@ const genStr = function generateRandomString() {
 
 app.post("/urls", (req, res) => {
   urlDatabase[genStr()] = req.body.longURL
-  console.log(urlDatabase)
   res.send("Ok");         
+});
+
+app.post("/urls/:shortURL/update", (req, res) => {
+  urlDatabase[req.params.shortURL] = req.body.longURL
+  res.redirect("/urls");         
 });
 
 app.post("/urls/:shortURL/delete", (req, res) => {
@@ -36,7 +40,6 @@ app.get("/", (req, res) => {
   res.send("Hello!");
 });
 
-
 app.get("/urls", (req, res) => {
   const templateVars = { urls: urlDatabase };
   res.render("urls_index", templateVars);
@@ -44,6 +47,11 @@ app.get("/urls", (req, res) => {
 
 app.get("/urls/new", (req, res) => {
   res.render("urls_new");
+});
+
+app.get("/urls/:shortURL", (req, res) => {
+  const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL] };
+  res.render("urls_show", templateVars);
 });
 
 app.get("/u/:shortURL", (req, res) => {
