@@ -10,10 +10,17 @@
         <a class="nav-item nav-link" href="/urls/new">Create New URL</a>
       </div>
       <div class="navbar-nav ml-auto">
-        <form method="POST" action="/login">
-          <input name="username" placeholder="username"/>
+       <% if(username) { %>
+        <div class="nav-item navbar-brand">Hello <%= username %>!</div>
+        <form method="POST" action="/logout">
+          <button type="submit" class="btn btn-primary">Logout</button> 
+        </form>
+        <% } else { %>
+        <form method="POST" action="/login" class="form-inline">
+          <input name="username" placeholder="username" class="form-control mr-sm-2"/>
           <button type="submit" class="btn btn-primary">Submit</button>
         </form>
+        <% } %>
       </div>
     </div>
   </nav>
