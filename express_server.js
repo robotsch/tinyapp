@@ -22,7 +22,8 @@ const genStr = function generateRandomString() {
 }
 
 app.post("/urls", (req, res) => {
-  console.log(req.body);  
+  urlDatabase[genStr()] = req.body.longURL
+  console.log(urlDatabase)
   res.send("Ok");         
 });
 
@@ -40,12 +41,11 @@ app.get("/urls/new", (req, res) => {
   res.render("urls_new");
 });
 
-app.get("/urls/:shortURL", (req, res) => {
+app.get("/u/:shortURL", (req, res) => {
   const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL] };
   res.redirect(urlDatabase[req.params.shortURL])
 });
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
-  // console.log(genStr())
 });
