@@ -65,10 +65,9 @@ app.get("/", (req, res) => {
 });
 
 // URL actions
-
 app.post("/urls", (req, res) => {
   urlDatabase[genStr(6)] = req.body.longURL;
-  res.send("Ok");
+  return res.redirect("/urls")
 });
 
 app.post("/urls/:shortURL/update", (req, res) => {
@@ -79,6 +78,35 @@ app.post("/urls/:shortURL/update", (req, res) => {
 app.post("/urls/:shortURL/delete", (req, res) => {
   delete urlDatabase[req.params.shortURL];
   res.redirect("/urls");
+});
+
+// Get urls
+app.get("/urls", (req, res) => {
+  const templateVars = { urls: urlDatabase, user: userDB[req.cookies.user_id] };
+  res.render("urls_index", templateVars);
+});
+
+app.get("/urls/new", (req, res) => {
+  const templateVars = { urls: urlDatabase, user: userDB[req.cookies.user_id] };
+  res.render("urls_new", templateVars);
+});
+
+app.get("/urls/:shortURL", (req, res) => {
+  const templateVars = {
+    shortURL: req.params.shortURL,
+    longURL: urlDatabase[req.params.shortURL],
+    user: userDB[req.cookies.user_id],
+  };
+  res.render("urls_show", templateVars);
+});
+
+app.get("/u/:shortURL", (req, res) => {
+  const templateVars = {
+    shortURL: req.params.shortURL,
+    longURL: urlDatabase[req.params.shortURL],
+    user: userDB[req.cookies.user_id],
+  };
+  res.redirect(urlDatabase[req.params.shortURL]);
 });
 
 // Registration/auth
@@ -136,34 +164,7 @@ app.post("/logout", (req, res) => {
   res.redirect("/login");
 });
 
-// Get urls
-app.get("/urls", (req, res) => {
-  const templateVars = { urls: urlDatabase, user: userDB[req.cookies.user_id] };
-  res.render("urls_index", templateVars);
-});
 
-app.get("/urls/new", (req, res) => {
-  const templateVars = { urls: urlDatabase, user: userDB[req.cookies.user_id] };
-  res.render("urls_new", templateVars);
-});
-
-app.get("/urls/:shortURL", (req, res) => {
-  const templateVars = {
-    shortURL: req.params.shortURL,
-    longURL: urlDatabase[req.params.shortURL],
-    user: userDB[req.cookies.user_id],
-  };
-  res.render("urls_show", templateVars);
-});
-
-app.get("/u/:shortURL", (req, res) => {
-  const templateVars = {
-    shortURL: req.params.shortURL,
-    longURL: urlDatabase[req.params.shortURL],
-    user: userDB[req.cookies.user_id],
-  };
-  res.redirect(urlDatabase[req.params.shortURL]);
-});
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
