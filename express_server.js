@@ -8,13 +8,13 @@ app.use(bodyParser.urlencoded({ extended: true }), cookies());
 app.set("view engine", "ejs");
 
 const urlDatabase = {
-  b2xVn2: "http://www.lighthouselabs.ca",
-  "9sm5xK": "http://www.google.com",
+  "b2xVn2": {longURL: "http://www.lighthouselabs.ca", userID: 1234},
+  "9sm5xK": {longURL: "http://www.google.com", userID: 1234}
 };
 
 const userDB = {
   abcd: {
-    id: "abcd",
+    id: "1234",
     email: "test@gmail.com",
     password: "test",
   },
@@ -76,12 +76,12 @@ app.get("/", (req, res) => {
 
 // URL actions
 app.post("/urls", (req, res) => {
-  urlDatabase[genStr(6)] = req.body.longURL;
+  urlDatabase[genStr(6)] = { longURL: req.body.longURL, userID: req.cookies.user_id};
   return res.redirect("/urls");
 });
 
 app.post("/urls/:shortURL/update", (req, res) => {
-  urlDatabase[req.params.shortURL] = req.body.longURL;
+  urlDatabase[req.params.shortURL].longURL = req.body.longURL;
   res.redirect("/urls");
 });
 
@@ -104,14 +104,14 @@ app.get("/urls/new", (req, res) => {
 app.get("/urls/:shortURL", (req, res) => {
   const templateVars = {
     shortURL: req.params.shortURL,
-    longURL: urlDatabase[req.params.shortURL],
+    longURL: urlDatabase[req.params.shortURL].longURL,
     user: userDB[req.cookies.user_id],
   };
   res.render("urls_show", templateVars);
 });
 
 app.get("/u/:shortURL", (req, res) => {
-  res.redirect(urlDatabase[req.params.shortURL]);
+  res.redirect(urlDatabase[req.params.shortURL].longURL);
 });
 
 // Registration/auth
