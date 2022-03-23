@@ -13,10 +13,10 @@ const urlDatabase = {
 };
 
 const userDB = {
-  default: {
-    id: "defaultUserID",
-    email: "default",
-    password: "default",
+  abcd: {
+    id: "abcd",
+    email: "test@gmail.com",
+    password: "test",
   },
   default2: {
     id: "defaultUser2ID",
@@ -35,16 +35,25 @@ const genStr = function generateRandomString(len) {
   return result;
 };
 
-const createUser = function createNewUserInDatabase(email, password) {
+const createUser = function createNewUserInDatabase(userEmail, userPassword, database) {
   const newId = genStr(32);
-  userDB[newId] = {
+  database[newId] = {
     id: newId,
-    email: email,
-    password: password,
+    email: userEmail,
+    password: userPassword,
   };
   return newId;
 };
 
+const emailCheck = function checkIfEmailExistsInDatabase(userEmail, database) {
+  for(const user in database) {
+    if(userEmail === database[user].email) return true
+  }
+}
+
+const passwordCheck = function checkEmailPasswordMatch(userEmail, userPassword, database) {
+  
+}
 
 
 app.get("/", (req, res) => {
@@ -91,7 +100,16 @@ app.post("/login", (req, res) => {
 });
 
 app.post("/register", (req, res) => {
+  const inputEmail = req.body.email
+  const inputPassword = req.body.password
 
+  if(!inputEmail || !inputPassword) return res.status(400).send("Bad request")
+  if(emailCheck(inputEmail, userDB)) return res.status(400).send("Email already exists")
+  
+  const id = createUser(inputEmail, inputPassword, userDB)
+  
+  res.cookie("user_id", id)
+  res.redirect("/urls")
 });
 
 app.post("/logout", (req, res) => {
