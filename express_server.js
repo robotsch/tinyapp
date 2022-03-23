@@ -22,6 +22,10 @@ const genStr = function generateRandomString() {
   return result;
 };
 
+app.get("/", (req, res) => {
+  res.send("Hello!");
+});
+
 app.post("/login", (req, res) => {
   res.cookie("username", req.body.username);
   res.redirect("/urls");
@@ -47,8 +51,9 @@ app.post("/urls/:shortURL/delete", (req, res) => {
   res.redirect("/urls");
 });
 
-app.get("/", (req, res) => {
-  res.send("Hello!");
+app.get("/register", (req, res) => {
+  const templateVars = {username: req.cookies["username"]};
+  res.render("user_register", templateVars)
 });
 
 app.get("/urls", (req, res) => {
@@ -57,7 +62,8 @@ app.get("/urls", (req, res) => {
 });
 
 app.get("/urls/new", (req, res) => {
-  res.render("urls_new");
+  const templateVars = { urls: urlDatabase, username: req.cookies["username"]};
+  res.render("urls_new", templateVars);
 });
 
 app.get("/urls/:shortURL", (req, res) => {
@@ -77,6 +83,8 @@ app.get("/u/:shortURL", (req, res) => {
   };
   res.redirect(urlDatabase[req.params.shortURL]);
 });
+
+
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);

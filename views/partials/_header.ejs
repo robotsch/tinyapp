@@ -16,10 +16,8 @@
           <button type="submit" class="btn btn-primary">Logout</button> 
         </form>
         <% } else { %>
-        <form method="POST" action="/login" class="form-inline">
-          <input name="username" placeholder="username" class="form-control mr-sm-2"/>
-          <button type="submit" class="btn btn-primary">Submit</button>
-        </form>
+          <a href="/urls" class="btn btn-primary mr-sm-2">Login</a>
+          <a href="/register" class="btn btn-primary">Register</a>
         <% } %>
       </div>
     </div>
