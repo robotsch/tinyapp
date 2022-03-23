@@ -51,8 +51,12 @@ const emailCheck = function checkIfEmailExistsInDatabase(userEmail, database) {
   }
 }
 
-const passwordCheck = function checkEmailPasswordMatch(userEmail, userPassword, database) {
-  
+const authUser = function authenticateUserIfEmailPasswordMatch(userEmail, userPassword, database) {
+  for(const user in database) {
+    if(userEmail === database[user].email && userPassword === database[user].password) {
+      return database[user].id
+    } 
+  }
 }
 
 
@@ -95,21 +99,36 @@ app.get("/register", (req, res) => {
 });
 
 app.post("/login", (req, res) => {
-  const userEmail = req.body.email
+  const inputEmail = req.body.email
+  const inputPassword = req.body.password
 
+  // Fast fail checks for missing input or nonexistent email
+  // TODO: Can I make this status code stuff DRY?
+  if(!inputEmail || !inputPassword) return res.status(403).send("Bad request")
+  if(!emailCheck(inputEmail, userDB)) return res.status(403).send("Email or password incorrect")
+
+  // If authUser returns an id, login checks were successful
+  const id = authUser(inputEmail, inputPassword, userDB)
+  if(id) {
+    res.cookie("user_id", id)
+    return res.redirect("/urls")
+  }
+  return res.status(403).send("Email or password incorrect")
 });
 
 app.post("/register", (req, res) => {
   const inputEmail = req.body.email
   const inputPassword = req.body.password
 
+  // Fast fail checks for missing input or email in use
   if(!inputEmail || !inputPassword) return res.status(400).send("Bad request")
   if(emailCheck(inputEmail, userDB)) return res.status(400).send("Email already exists")
   
+  // createUser will return the newly generated id, use that for cookie
   const id = createUser(inputEmail, inputPassword, userDB)
   
   res.cookie("user_id", id)
-  res.redirect("/urls")
+  return res.redirect("/urls")
 });
 
 app.post("/logout", (req, res) => {
