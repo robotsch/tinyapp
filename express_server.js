@@ -25,7 +25,7 @@ const userDB = {
   },
 };
 
-const genStr = function generateRandomString(len) {
+const genStr = function(len) {
   const rndStr = "0123456789abcdefABCDEF";
   let result = "";
   for (let i = 0; i < len; i += 1) {
@@ -35,7 +35,11 @@ const genStr = function generateRandomString(len) {
   return result;
 };
 
-const createUser = function createNewUserInDatabase(userEmail, userPassword, database) {
+const createUser = function(
+  userEmail,
+  userPassword,
+  database
+) {
   const newId = genStr(32);
   database[newId] = {
     id: newId,
@@ -45,20 +49,26 @@ const createUser = function createNewUserInDatabase(userEmail, userPassword, dat
   return newId;
 };
 
-const emailCheck = function checkIfEmailExistsInDatabase(userEmail, database) {
-  for(const user in database) {
-    if(userEmail === database[user].email) return true
+const emailCheck = function(userEmail, database) {
+  for (const user in database) {
+    if (userEmail === database[user].email) return true;
   }
-}
+};
 
-const authUser = function authenticateUserIfEmailPasswordMatch(userEmail, userPassword, database) {
-  for(const user in database) {
-    if(userEmail === database[user].email && userPassword === database[user].password) {
-      return database[user].id
-    } 
+const authUser = function(
+  userEmail,
+  userPassword,
+  database
+) {
+  for (const user in database) {
+    if (
+      userEmail === database[user].email &&
+      userPassword === database[user].password
+    ) {
+      return database[user].id;
+    }
   }
-}
-
+};
 
 app.get("/", (req, res) => {
   res.send("Hello!");
@@ -67,7 +77,7 @@ app.get("/", (req, res) => {
 // URL actions
 app.post("/urls", (req, res) => {
   urlDatabase[genStr(6)] = req.body.longURL;
-  return res.redirect("/urls")
+  return res.redirect("/urls");
 });
 
 app.post("/urls/:shortURL/update", (req, res) => {
@@ -101,11 +111,6 @@ app.get("/urls/:shortURL", (req, res) => {
 });
 
 app.get("/u/:shortURL", (req, res) => {
-  const templateVars = {
-    shortURL: req.params.shortURL,
-    longURL: urlDatabase[req.params.shortURL],
-    user: userDB[req.cookies.user_id],
-  };
   res.redirect(urlDatabase[req.params.shortURL]);
 });
 
@@ -127,44 +132,44 @@ app.get("/register", (req, res) => {
 });
 
 app.post("/login", (req, res) => {
-  const inputEmail = req.body.email
-  const inputPassword = req.body.password
+  const inputEmail = req.body.email;
+  const inputPassword = req.body.password;
 
   // Fast fail checks for missing input or nonexistent email
   // TODO: Can I make this status code stuff DRY?
-  if(!inputEmail || !inputPassword) return res.status(403).send("Bad request")
-  if(!emailCheck(inputEmail, userDB)) return res.status(403).send("Email or password incorrect")
+  if (!inputEmail || !inputPassword) return res.status(403).send("Bad request");
+  if (!emailCheck(inputEmail, userDB))
+    return res.status(403).send("Email or password incorrect");
 
   // If authUser returns an id, login checks were successful
-  const id = authUser(inputEmail, inputPassword, userDB)
-  if(id) {
-    res.cookie("user_id", id)
-    return res.redirect("/urls")
+  const id = authUser(inputEmail, inputPassword, userDB);
+  if (id) {
+    res.cookie("user_id", id);
+    return res.redirect("/urls");
   }
-  return res.status(403).send("Email or password incorrect")
+  return res.status(403).send("Email or password incorrect");
 });
 
 app.post("/register", (req, res) => {
-  const inputEmail = req.body.email
-  const inputPassword = req.body.password
+  const inputEmail = req.body.email;
+  const inputPassword = req.body.password;
 
   // Fast fail checks for missing input or email in use
-  if(!inputEmail || !inputPassword) return res.status(400).send("Bad request")
-  if(emailCheck(inputEmail, userDB)) return res.status(400).send("Email already exists")
-  
+  if (!inputEmail || !inputPassword) return res.status(400).send("Bad request");
+  if (emailCheck(inputEmail, userDB))
+    return res.status(400).send("Email already exists");
+
   // createUser will return the newly generated id, use that for cookie
-  const id = createUser(inputEmail, inputPassword, userDB)
-  
-  res.cookie("user_id", id)
-  return res.redirect("/urls")
+  const id = createUser(inputEmail, inputPassword, userDB);
+
+  res.cookie("user_id", id);
+  return res.redirect("/urls");
 });
 
 app.post("/logout", (req, res) => {
   res.clearCookie("user_id");
   res.redirect("/login");
 });
-
-
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
