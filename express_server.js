@@ -2,13 +2,13 @@ const express = require("express");
 const app = express();
 const PORT = 8080;
 const bodyParser = require("body-parser");
-const cookies = require("cookie-parser")
+const cookies = require("cookie-parser");
 
 app.use(bodyParser.urlencoded({ extended: true }), cookies());
 app.set("view engine", "ejs");
 
 const urlDatabase = {
-  "b2xVn2": "http://www.lighthouselabs.ca",
+  b2xVn2: "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com",
 };
 
@@ -28,7 +28,10 @@ app.get("/", (req, res) => {
 
 app.post("/login", (req, res) => {
   res.cookie("username", req.body.username);
-  res.redirect("/urls");
+  const templateVars = { username: req.cookies["username"] };
+  if (templateVars.username) {
+    res.redirect("/urls");
+  }
 });
 
 app.post("/logout", (req, res) => {
@@ -52,17 +55,20 @@ app.post("/urls/:shortURL/delete", (req, res) => {
 });
 
 app.get("/register", (req, res) => {
-  const templateVars = {username: req.cookies["username"]};
-  res.render("user_register", templateVars)
+  const templateVars = { username: req.cookies["username"] };
+  if (templateVars.username) {
+    res.redirect("/urls");
+  }
+  res.render("user_register", templateVars);
 });
 
 app.get("/urls", (req, res) => {
-  const templateVars = { urls: urlDatabase, username: req.cookies["username"]};
+  const templateVars = { urls: urlDatabase, username: req.cookies["username"] };
   res.render("urls_index", templateVars);
 });
 
 app.get("/urls/new", (req, res) => {
-  const templateVars = { urls: urlDatabase, username: req.cookies["username"]};
+  const templateVars = { urls: urlDatabase, username: req.cookies["username"] };
   res.render("urls_new", templateVars);
 });
 
@@ -79,12 +85,10 @@ app.get("/u/:shortURL", (req, res) => {
   const templateVars = {
     shortURL: req.params.shortURL,
     longURL: urlDatabase[req.params.shortURL],
-    username: req.cookies["username"]
+    username: req.cookies["username"],
   };
   res.redirect(urlDatabase[req.params.shortURL]);
 });
-
-
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
