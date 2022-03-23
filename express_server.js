@@ -8,8 +8,8 @@ app.use(bodyParser.urlencoded({ extended: true }), cookies());
 app.set("view engine", "ejs");
 
 const urlDatabase = {
-  "b2xVn2": {longURL: "http://www.lighthouselabs.ca", userID: 1234},
-  "9sm5xK": {longURL: "http://www.google.com", userID: 1234}
+  b2xVn2: { longURL: "http://www.lighthouselabs.ca", userID: 1234 },
+  "9sm5xK": { longURL: "http://www.google.com", userID: 1234 },
 };
 
 const userDB = {
@@ -35,11 +35,7 @@ const genStr = function(len) {
   return result;
 };
 
-const createUser = function(
-  userEmail,
-  userPassword,
-  database
-) {
+const createUser = function(userEmail, userPassword, database) {
   const newId = genStr(32);
   database[newId] = {
     id: newId,
@@ -55,11 +51,7 @@ const emailCheck = function(userEmail, database) {
   }
 };
 
-const authUser = function(
-  userEmail,
-  userPassword,
-  database
-) {
+const authUser = function(userEmail, userPassword, database) {
   for (const user in database) {
     if (
       userEmail === database[user].email &&
@@ -76,8 +68,14 @@ app.get("/", (req, res) => {
 
 // URL actions
 app.post("/urls", (req, res) => {
-  urlDatabase[genStr(6)] = { longURL: req.body.longURL, userID: req.cookies.user_id};
-  return res.redirect("/urls");
+  if (req.cookies.user_id) {
+    urlDatabase[genStr(6)] = {
+      longURL: req.body.longURL,
+      userID: req.cookies.user_id,
+    };
+    return res.redirect("/urls");
+  }
+  return res.redirect("/login");
 });
 
 app.post("/urls/:shortURL/update", (req, res) => {
@@ -98,6 +96,9 @@ app.get("/urls", (req, res) => {
 
 app.get("/urls/new", (req, res) => {
   const templateVars = { urls: urlDatabase, user: userDB[req.cookies.user_id] };
+  if (!req.cookies.user_id) {
+    return res.redirect("/login");
+  }
   res.render("urls_new", templateVars);
 });
 
