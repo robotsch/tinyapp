@@ -13,17 +13,17 @@ const urlDatabase = {
 };
 
 const userDB = {
-  "default": {
+  default: {
     id: "defaultUserID",
-    email: "someEmail@example.edu",
-    password: "least-secure-password-ever"
+    email: "default",
+    password: "default",
   },
-  "default2": {
+  default2: {
     id: "defaultUser2ID",
     email: "someEmail2@example.edu",
-    password: "least-secure-password-ever"
-  }
-}
+    password: "least-secure-password-ever",
+  },
+};
 
 const genStr = function generateRandomString(len) {
   const rndStr = "0123456789abcdefABCDEF";
@@ -36,34 +36,22 @@ const genStr = function generateRandomString(len) {
 };
 
 const createUser = function createNewUserInDatabase(email, password) {
-  const newId = genStr(32)
+  const newId = genStr(32);
   userDB[newId] = {
     id: newId,
     email: email,
-    password: password
-  }
-  return newId
-}
+    password: password,
+  };
+  return newId;
+};
 
-const checkEmailExists = function checkIfEmailExistsInUserDB(email, database) {
-  for(user of Object.values(database)) {
-    if(user.email === email) return true
-  }
-  return false
-}
 
-const authUser = function authenticateUser() {
-
-}
 
 app.get("/", (req, res) => {
   res.send("Hello!");
 });
 
-app.post("/logout", (req, res) => {
-  res.clearCookie("username");
-  res.redirect("/urls");
-});
+// URL actions
 
 app.post("/urls", (req, res) => {
   urlDatabase[genStr(6)] = req.body.longURL;
@@ -80,42 +68,35 @@ app.post("/urls/:shortURL/delete", (req, res) => {
   res.redirect("/urls");
 });
 
-
 // Registration/auth
 app.get("/login", (req, res) => {
   const templateVars = { user: userDB[req.cookies.user_id] };
-  if (templateVars.username) {
+  if (templateVars.user) {
     res.redirect("/urls");
   }
-  res.render("user_register", templateVars);
+  res.render("user_login", templateVars);
 });
 
 app.get("/register", (req, res) => {
   const templateVars = { user: userDB[req.cookies.user_id] };
-  if (templateVars.username) {
+  if (templateVars.user) {
     res.redirect("/urls");
   }
   res.render("user_register", templateVars);
 });
 
 app.post("/login", (req, res) => {
-  res.cookie("username", req.body.username);
-  const templateVars = { user: userDB[req.cookies.user_id] };
-  if (templateVars.username) {
-    res.redirect("/urls");
-  }
+  const userEmail = req.body.email
+
 });
 
 app.post("/register", (req, res) => {
-  const { email, password } = req.body
-  if(!email || !password) {
-    return res.status(400).send('Bad Registration')
-  }
-  if(!checkEmailExists(email, userDB)) {
-    const id = createUser(email, password, userDB)
-    res.cookie("user_id", id)
-    res.redirect("/urls")
-  }
+
+});
+
+app.post("/logout", (req, res) => {
+  res.clearCookie("user_id");
+  res.redirect("/login");
 });
 
 // Get urls
