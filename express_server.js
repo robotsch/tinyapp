@@ -13,6 +13,10 @@ const {
   urlsForUser,
 } = require("./helpers");
 
+/* eslint-disable camelcase */
+// Disabling camelcase check specifically for user_id
+// If Compass wants it set to user_id, so it shall be.
+
 // Using methodOverride for put, delete
 // Using cooke-session for session management
 app.use(
@@ -46,7 +50,7 @@ const missingAuthCheck = function(req, res, next) {
   }
   return next();
 };
-
+// Middleware to redirect already logged in users away from registration and login pages
 const alreadyAuthedCheck = function(req, res, next) {
   if (req.session.user_id) {
     return res.redirect("/urls");
