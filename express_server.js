@@ -148,7 +148,7 @@ app.post("/register", (req, res) => {
     req.session.user_id = id;
     return res.redirect("/urls");
   }
-  // Default to fail
+  // Default
   res.status(403).send("Registration failed");
 });
 
