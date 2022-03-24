@@ -47,7 +47,7 @@ const authUser = function(userEmail, userPassword, database) {
   }
 };
 
-const genUrlList = function(userID, database) {
+const urlsForUser = function(userID, database) {
   const userUrls = {}
   for(const entry in database) {
     if(userID === database[entry].userID) {
@@ -88,7 +88,7 @@ app.get("/urls", (req, res) => {
   if (!req.cookies.user_id) {
     return res.redirect("/login");
   }
-  const userUrls = genUrlList(req.cookies.user_id, urlDatabase)
+  const userUrls = urlsForUser(req.cookies.user_id, urlDatabase)
   const templateVars = { urls: userUrls, user: userDB[req.cookies.user_id] };
   res.render("urls_index", templateVars);
 });
