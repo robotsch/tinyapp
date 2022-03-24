@@ -3,6 +3,7 @@ const app = express();
 const PORT = 8080;
 const bodyParser = require("body-parser");
 const cookies = require("cookie-parser");
+const bcrypt = require('bcryptjs');
 
 app.use(bodyParser.urlencoded({ extended: true }), cookies());
 app.set("view engine", "ejs");
@@ -42,7 +43,7 @@ const authUser = function(userEmail, userPassword, database) {
   for (const user in database) {
     if (
       userEmail === database[user].email &&
-      userPassword === database[user].password
+      bcrypt.compareSync(userPassword, database[user].password)
     ) {
       return database[user].id;
     }
@@ -146,8 +147,7 @@ app.get("/register", (req, res) => {
 
 app.post("/login", (req, res) => {
   const inputEmail = req.body.email;
-  const inputPassword = req.body.password;
-
+  const inputPassword = req.body.password
   // Fast fail checks for missing input or nonexistent email
   // TODO: Can I make this status code stuff DRY?
   if (!inputEmail || !inputPassword) return res.status(403).send("Bad request");
@@ -165,7 +165,7 @@ app.post("/login", (req, res) => {
 
 app.post("/register", (req, res) => {
   const inputEmail = req.body.email;
-  const inputPassword = req.body.password;
+  const inputPassword = bcrypt.hashSync(req.body.password, 10);
 
   // Fast fail checks for missing input or email in use
   if (!inputEmail || !inputPassword) return res.status(400).send("Bad request");
@@ -180,7 +180,7 @@ app.post("/register", (req, res) => {
 });
 
 app.post("/logout", (req, res) => {
-  console.log(urlDatabase)
+  console.log(userDB)
   res.clearCookie("user_id");
   res.redirect("/login");
 });
