@@ -58,9 +58,11 @@ const alreadyAuthedCheck = function(req, res, next) {
 // TinyApp URL actions
 // ===================================================
 app.put("/urls", missingAuthCheck, (req, res) => {
+  const curDate = new Date();
   urlDatabase[genStr(6)] = {
     longURL: req.body.longURL,
     userID: req.session.user_id,
+    creationDate: curDate.toLocaleString(),
     visits: 0,
     uniqueVisits: 0
   };
@@ -103,12 +105,15 @@ app.get("/urls/:shortURL", badPermissionCheck, (req, res) => {
     shortURL: req.params.shortURL,
     longURL: urlDatabase[req.params.shortURL].longURL,
     user: userDB[req.session.user_id],
+    creationDate: urlDatabase[req.params.shortURL].creationDate,
+    clicks: urlDatabase[req.params.shortURL].visits
   };
   res.render("urls_show", templateVars);
 });
 
 // Redirect to shortURL's longURL - no permission check
 app.get("/u/:shortURL", (req, res) => {
+  urlDatabase[req.params.shortURL].visits += 1;
   res.redirect(urlDatabase[req.params.shortURL].longURL);
 });
 
