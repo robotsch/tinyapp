@@ -3,7 +3,7 @@ const app = express();
 const PORT = 8080;
 const bodyParser = require("body-parser");
 const cookieSession = require("cookie-session");
-const methodOverride = require('method-override')
+const methodOverride = require('method-override');
 const bcrypt = require("bcryptjs");
 const {
   genStr,
@@ -13,9 +13,11 @@ const {
   urlsForUser,
 } = require("./helpers");
 
+// Using methodOverride for put, delete
+// Using cooke-session for session management
 app.use(
   bodyParser.urlencoded({ extended: true }),
-  methodOverride('X-HTTP-Method-Override'),
+  methodOverride('_method'),
   cookieSession({
     name: "session",
     keys: ["bd31b612d6287c82396692ce1871d096"],
@@ -26,24 +28,36 @@ app.set("view engine", "ejs");
 const urlDatabase = {};
 const userDB = {};
 
-// Want to see a magic trick?
-const badPermissionRequest = function(req, res, next) {
+// ===================================================
+// Middlewares
+// ===================================================
+// This stuff is magic - thanks Jamal (@Croisade) for showing this to me!
+// Middleware to send a bad request error on permission mismatch
+const badPermissionCheck = function(req, res, next) {
   if (!(urlDatabase[req.params.shortURL].userID === req.session.user_id)) {
     return res.status(400).send("Bad request");
   }
-  return next()
-}
-
-app.get("/", (req, res) => {
-  res.redirect("/urls");
-});
-
-// URL actions
-app.post("/urls", (req, res) => {
-  // Fast fail check for nonlogin
+  return next();
+};
+// Middleware to redirect non-logged in users to login page where applicable
+const missingAuthCheck = function(req, res, next) {
   if (!req.session.user_id) {
     return res.redirect("/login");
   }
+  return next();
+};
+
+const alreadyAuthedCheck = function(req, res, next) {
+  if (req.session.user_id) {
+    return res.redirect("/urls");
+  }
+  return next();
+}
+
+// ===================================================
+// URL actions
+// ===================================================
+app.put("/urls", missingAuthCheck, (req, res) => {
   urlDatabase[genStr(6)] = {
     longURL: req.body.longURL,
     userID: req.session.user_id,
@@ -51,39 +65,38 @@ app.post("/urls", (req, res) => {
   return res.redirect("/login");
 });
 
-app.post("/urls/:shortURL/update", badPermissionRequest, (req, res) => {
+app.put("/urls/:shortURL/update", badPermissionCheck, (req, res) => {
   urlDatabase[req.params.shortURL].longURL = req.body.longURL;
   res.redirect("/urls");
 });
 
-app.post("/urls/:shortURL/delete", badPermissionRequest, (req, res) => {
-  // Fast fail check for nonlogin
+app.delete("/urls/:shortURL/delete", badPermissionCheck, (req, res) => {
   delete urlDatabase[req.params.shortURL];
   res.redirect("/urls");
 });
 
-// Get urls
-app.get("/urls", (req, res) => {
-  // Fast fail check for nonlogin
-  if (!req.session.user_id) {
-    return res.redirect("/login");
-  }
+// ===================================================
+// Gets/navigation
+// ===================================================
+app.get("/", (req, res) => {
+  res.redirect("/urls");
+});
+
+// URL Index, middleware redirect if not logged in
+app.get("/urls", missingAuthCheck, (req, res) => {
   const userUrls = urlsForUser(req.session.user_id, urlDatabase);
   const templateVars = { urls: userUrls, user: userDB[req.session.user_id] };
   res.render("urls_index", templateVars);
 });
 
-app.get("/urls/new", (req, res) => {
-  // Fast fail check for nonlogin
-  if (!req.session.user_id) {
-    return res.redirect("/login");
-  }
+// Create New URL page, middleware redirect if not logged in
+app.get("/urls/new", missingAuthCheck, (req, res) => {
   const templateVars = { urls: urlDatabase, user: userDB[req.session.user_id] };
   res.render("urls_new", templateVars);
 });
 
-app.get("/urls/:shortURL", badPermissionRequest, (req, res) => {
-
+// Edit/analytics page for a given shortURL, middleware redirect if not logged in
+app.get("/urls/:shortURL", badPermissionCheck, (req, res) => {
   const templateVars = {
     shortURL: req.params.shortURL,
     longURL: urlDatabase[req.params.shortURL].longURL,
@@ -92,29 +105,27 @@ app.get("/urls/:shortURL", badPermissionRequest, (req, res) => {
   res.render("urls_show", templateVars);
 });
 
+// Redirect to shortURL's longURL - no permission check
 app.get("/u/:shortURL", (req, res) => {
   res.redirect(urlDatabase[req.params.shortURL].longURL);
 });
 
+// ===================================================
 // Registration/auth
-app.get("/login", (req, res) => {
-  // Redirect to urls page if a session already exists
-  if (req.session.user_id) {
-    return res.redirect("/urls");
-  }
+// ===================================================
+// Login page, middleware redirect if logged in
+app.get("/login", alreadyAuthedCheck, (req, res) => {
   const templateVars = { user: userDB[req.session.user_id] };
   res.render("user_login", templateVars);
 });
 
-app.get("/register", (req, res) => {
-  // Redirect to urls page if a session already exists
-  if (req.session.user_id) {
-    return res.redirect("/urls");
-  }
+// Registration page, middleware redirect if logged in
+app.get("/register", alreadyAuthedCheck, (req, res) => {
   const templateVars = { user: userDB[req.session.user_id] };
   res.render("user_register", templateVars);
 });
 
+// Login request
 app.post("/login", (req, res) => {
   const inputEmail = req.body.email;
   const inputPassword = req.body.password;
@@ -133,6 +144,7 @@ app.post("/login", (req, res) => {
   res.status(403).send("Email or password incorrect");
 });
 
+// Registration request
 app.post("/register", (req, res) => {
   const inputEmail = req.body.email;
   const inputPassword = req.body.password;
@@ -156,6 +168,10 @@ app.post("/logout", (req, res) => {
   req.session = null;
   res.redirect("/login");
 });
+
+// ===================================================
+// Server startup/listener
+// ===================================================
 
 app.listen(PORT, () => {
   console.log(`TinyApp listening on port ${PORT}!`);
