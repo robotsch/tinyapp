@@ -1,5 +1,8 @@
 const bcrypt = require("bcryptjs");
 
+/**
+ * @returns a random alphanumeric string of len length
+ */
 const genStr = function(len) {
   const rndStr = "0123456789abcdefABCDEF";
   let result = "";
@@ -10,6 +13,16 @@ const genStr = function(len) {
   return result;
 };
 
+/**
+ * Creates and inserts a new user to a given database.
+ * id is a 32 character long alphanumeric string.
+ * database[newUser] = {
+ *  id: id,
+ *  email: email,
+ *  password: password
+ * }
+ * @returns newly generated 32 character long alphanumeric stinrg
+ */
 const createUser = function(userEmail, userPassword, database) {
   const newId = genStr(32);
   database[newId] = {
@@ -20,11 +33,20 @@ const createUser = function(userEmail, userPassword, database) {
   return newId;
 };
 
+/**
+ * Checks if a given email is found inside any 1-layer deep property of a given database.
+ * @returns true if found
+ */
 const emailCheck = function(userEmail, database) {
   for (const user in database) {
     if (userEmail === database[user].email) return true;
   }
 };
+
+/**
+ * Email/encrypted password check against a given database. 
+ * @returns the user's ID if check passes
+ */
 
 const authUser = function(userEmail, userPassword, database) {
   for (const user in database) {
@@ -37,6 +59,9 @@ const authUser = function(userEmail, userPassword, database) {
   }
 };
 
+/**
+ * @returns filtered list of URLs belonging to given userID, based on given database
+ */
 const urlsForUser = function(userID, database) {
   const userUrls = {}
   for(const entry in database) {
