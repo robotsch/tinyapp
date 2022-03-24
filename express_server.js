@@ -12,10 +12,12 @@ const {
   urlsForUser,
 } = require("./helpers");
 
-app.use(bodyParser.urlencoded({ extended: true }), cookies( {
-  name: 'session',
-  keys: ['bd31b612d6287c82396692ce1871d096']
-}));
+// app.use(bodyParser.urlencoded({ extended: true }), cookies( {
+//   name: 'session',
+//   keys: ['bd31b612d6287c82396692ce1871d096']
+// }));
+
+app.use(bodyParser.urlencoded({ extended: true }), cookies());
 app.set("view engine", "ejs");
 
 const urlDatabase = {};
