@@ -61,6 +61,7 @@ const alreadyAuthedCheck = function(req, res, next) {
 // ===================================================
 // TinyApp URL actions
 // ===================================================
+// Create new URL
 app.put("/urls", missingAuthCheck, (req, res) => {
   const curDate = new Date();
   urlDatabase[genStr(6)] = {
@@ -72,11 +73,13 @@ app.put("/urls", missingAuthCheck, (req, res) => {
   return res.redirect("/login");
 });
 
+// Update URL
 app.put("/urls/:shortURL/update", badPermissionCheck, (req, res) => {
   urlDatabase[req.params.shortURL].longURL = req.body.longURL;
   res.redirect("/urls");
 });
 
+// Delete URL
 app.delete("/urls/:shortURL/delete", badPermissionCheck, (req, res) => {
   delete urlDatabase[req.params.shortURL];
   res.redirect("/urls");
@@ -173,7 +176,7 @@ app.post("/register", (req, res) => {
   // Default
   res.status(403).send("Registration failed");
 });
-
+// Nullify login session
 app.post("/logout", (req, res) => {
   req.session = null;
   res.redirect("/login");
