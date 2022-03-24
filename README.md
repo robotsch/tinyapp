@@ -39,6 +39,6 @@ Users can also edit or view the analytics of any of their existing shortened URL
 - Per-user saved URLs
 - Basic URL analytics (creation date, click count)
 
-## Common Issues
+## Known Issues
 
-- Restarting the server mid-session fails to clear the assigned user session cookie, which may lead to certain pages failing to load
+- Restarting the server mid-session fails to clear the assigned user session cookie, which may lead to certain pages failing to load. This can be fixed by manually deleting any leftover session cookies.
