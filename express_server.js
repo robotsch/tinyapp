@@ -76,7 +76,9 @@ app.post("/urls", (req, res) => {
 });
 
 app.post("/urls/:shortURL/update", (req, res) => {
-  
+  if(!(urlDatabase[req.params.shortURL].userID === req.cookies.user_id)) {
+    return res.status(400).send("Bad request");
+  }
   urlDatabase[req.params.shortURL].longURL = req.body.longURL;
   res.redirect("/urls");
 });
