@@ -7,23 +7,8 @@ const cookies = require("cookie-parser");
 app.use(bodyParser.urlencoded({ extended: true }), cookies());
 app.set("view engine", "ejs");
 
-const urlDatabase = {
-  b2xVn2: { longURL: "http://www.lighthouselabs.ca", userID: 1234 },
-  "9sm5xK": { longURL: "http://www.google.com", userID: 1234 },
-};
-
-const userDB = {
-  abcd: {
-    id: "1234",
-    email: "test@gmail.com",
-    password: "test",
-  },
-  default2: {
-    id: "defaultUser2ID",
-    email: "someEmail2@example.edu",
-    password: "least-secure-password-ever",
-  },
-};
+const urlDatabase = {};
+const userDB = {};
 
 const genStr = function(len) {
   const rndStr = "0123456789abcdefABCDEF";
@@ -63,8 +48,13 @@ const authUser = function(userEmail, userPassword, database) {
 };
 
 const genUrlList = function(userID, database) {
-  console.log(userID, database)
-  
+  const userUrls = {}
+  for(const entry in database) {
+    if(userID === database[entry].userID) {
+      userUrls[entry] = { longURL: database[entry].longURL }
+    }
+  }
+  return userUrls
 }
 
 app.get("/", (req, res) => {
@@ -98,8 +88,8 @@ app.get("/urls", (req, res) => {
   if (!req.cookies.user_id) {
     return res.redirect("/login");
   }
-  genUrlList(req.cookies.user_id, userDB)
-  const templateVars = { urls: urlDatabase, user: userDB[req.cookies.user_id] };
+  const userUrls = genUrlList(req.cookies.user_id, urlDatabase)
+  const templateVars = { urls: userUrls, user: userDB[req.cookies.user_id] };
   res.render("urls_index", templateVars);
 });
 
@@ -177,6 +167,7 @@ app.post("/register", (req, res) => {
 });
 
 app.post("/logout", (req, res) => {
+  console.log(urlDatabase)
   res.clearCookie("user_id");
   res.redirect("/login");
 });
