@@ -26,6 +26,14 @@ app.set("view engine", "ejs");
 const urlDatabase = {};
 const userDB = {};
 
+// Want to see a magic trick?
+const badPermissionRequest = function(req, res, next) {
+  if (!(urlDatabase[req.params.shortURL].userID === req.session.user_id)) {
+    return res.status(400).send("Bad request");
+  }
+  return next()
+}
+
 app.get("/", (req, res) => {
   res.redirect("/urls");
 });
@@ -43,20 +51,13 @@ app.post("/urls", (req, res) => {
   return res.redirect("/login");
 });
 
-app.post("/urls/:shortURL/update", (req, res) => {
-  // Fast fail check for nonlogin
-  if (!(urlDatabase[req.params.shortURL].userID === req.session.user_id)) {
-    return res.status(400).send("Bad request");
-  }
+app.post("/urls/:shortURL/update", badPermissionRequest, (req, res) => {
   urlDatabase[req.params.shortURL].longURL = req.body.longURL;
   res.redirect("/urls");
 });
 
-app.post("/urls/:shortURL/delete", (req, res) => {
+app.post("/urls/:shortURL/delete", badPermissionRequest, (req, res) => {
   // Fast fail check for nonlogin
-  if (!(urlDatabase[req.params.shortURL].userID === req.session.user_id)) {
-    return res.status(400).send("Bad request");
-  }
   delete urlDatabase[req.params.shortURL];
   res.redirect("/urls");
 });
@@ -81,11 +82,8 @@ app.get("/urls/new", (req, res) => {
   res.render("urls_new", templateVars);
 });
 
-app.get("/urls/:shortURL", (req, res) => {
-  // Fast fail check for nonlogin
-  if (!(urlDatabase[req.params.shortURL].userID === req.session.user_id)) {
-    return res.status(400).send("Bad request");
-  }
+app.get("/urls/:shortURL", badPermissionRequest, (req, res) => {
+
   const templateVars = {
     shortURL: req.params.shortURL,
     longURL: urlDatabase[req.params.shortURL].longURL,
