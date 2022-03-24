@@ -55,12 +55,14 @@ const alreadyAuthedCheck = function(req, res, next) {
 };
 
 // ===================================================
-// URL actions
+// TinyApp URL actions
 // ===================================================
 app.put("/urls", missingAuthCheck, (req, res) => {
   urlDatabase[genStr(6)] = {
     longURL: req.body.longURL,
     userID: req.session.user_id,
+    visits: 0,
+    uniqueVisits: 0
   };
   return res.redirect("/login");
 });
