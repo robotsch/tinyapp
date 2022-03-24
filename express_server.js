@@ -3,8 +3,14 @@ const app = express();
 const PORT = 8080;
 const bodyParser = require("body-parser");
 const cookies = require("cookie-parser");
-const bcrypt = require('bcryptjs');
-const { genStr, createUser, emailCheck, authUser, urlsForUser } = require("./helpers")
+const bcrypt = require("bcryptjs");
+const {
+  genStr,
+  createUser,
+  emailCheck,
+  authUser,
+  urlsForUser,
+} = require("./helpers");
 
 // app.use(bodyParser.urlencoded({ extended: true }), cookies( {
 //   name: 'session',
@@ -18,13 +24,13 @@ const urlDatabase = {};
 const userDB = {};
 
 app.get("/", (req, res) => {
-  res.redirect("/urls")
+  res.redirect("/urls");
 });
 
 // URL actions
 app.post("/urls", (req, res) => {
   if (!req.cookies.user_id) {
-    return res.redirect("/urls");
+    return res.redirect("/login");
   }
   urlDatabase[genStr(6)] = {
     longURL: req.body.longURL,
@@ -34,7 +40,7 @@ app.post("/urls", (req, res) => {
 });
 
 app.post("/urls/:shortURL/update", (req, res) => {
-  if(!(urlDatabase[req.params.shortURL].userID === req.cookies.user_id)) {
+  if (!(urlDatabase[req.params.shortURL].userID === req.cookies.user_id)) {
     return res.status(400).send("Bad request");
   }
   urlDatabase[req.params.shortURL].longURL = req.body.longURL;
@@ -42,7 +48,7 @@ app.post("/urls/:shortURL/update", (req, res) => {
 });
 
 app.post("/urls/:shortURL/delete", (req, res) => {
-  if(!(urlDatabase[req.params.shortURL].userID === req.cookies.user_id)) {
+  if (!(urlDatabase[req.params.shortURL].userID === req.cookies.user_id)) {
     return res.status(400).send("Bad request");
   }
   delete urlDatabase[req.params.shortURL];
@@ -54,11 +60,12 @@ app.get("/urls", (req, res) => {
   if (!req.cookies.user_id) {
     return res.redirect("/login");
   }
-  const userUrls = urlsForUser(req.cookies.user_id, urlDatabase)
+  const userUrls = urlsForUser(req.cookies.user_id, urlDatabase);
   const templateVars = { urls: userUrls, user: userDB[req.cookies.user_id] };
   res.render("urls_index", templateVars);
 });
 
+// Change this to disallow non-logged in users
 app.get("/urls/new", (req, res) => {
   if (!req.cookies.user_id) {
     return res.redirect("/login");
@@ -68,10 +75,9 @@ app.get("/urls/new", (req, res) => {
 });
 
 app.get("/urls/:shortURL", (req, res) => {
-  if(!(urlDatabase[req.params.shortURL].userID === req.cookies.user_id)) {
+  if (!(urlDatabase[req.params.shortURL].userID === req.cookies.user_id)) {
     return res.status(400).send("Bad request");
   }
-
   const templateVars = {
     shortURL: req.params.shortURL,
     longURL: urlDatabase[req.params.shortURL].longURL,
@@ -86,10 +92,10 @@ app.get("/u/:shortURL", (req, res) => {
 
 // Registration/auth
 app.get("/login", (req, res) => {
-  const templateVars = { user: userDB[req.cookies.user_id] };
-  if (templateVars.user) {
-    res.redirect("/urls");
+  if (req.cookies.user_id) {
+    return res.redirect("/urls");
   }
+  const templateVars = { user: userDB[req.cookies.user_id] };
   res.render("user_login", templateVars);
 });
 
@@ -103,7 +109,7 @@ app.get("/register", (req, res) => {
 
 app.post("/login", (req, res) => {
   const inputEmail = req.body.email;
-  const inputPassword = req.body.password
+  const inputPassword = req.body.password;
   // Fast fail checks for missing input or nonexistent email
   // TODO: Can I make this status code stuff DRY?
   if (!inputEmail || !inputPassword) return res.status(403).send("Bad request");
@@ -113,7 +119,7 @@ app.post("/login", (req, res) => {
   // If authUser returns an id, login checks were successful
   const id = authUser(inputEmail, inputPassword, userDB);
   if (id) {
-    req.cookie("user_id", id);
+    res.cookie("user_id", id);
     return res.redirect("/urls");
   }
   res.status(403).send("Email or password incorrect");
@@ -121,7 +127,7 @@ app.post("/login", (req, res) => {
 
 app.post("/register", (req, res) => {
   const inputEmail = req.body.email;
-  const inputPassword = bcrypt.hashSync(req.body.password, 10);
+  const inputPassword = req.body.password;
 
   // Fast fail checks for missing input or email in use
   if (!inputEmail || !inputPassword) return res.status(400).send("Bad request");
@@ -129,7 +135,7 @@ app.post("/register", (req, res) => {
     return res.status(400).send("Email already exists");
 
   // createUser will return the newly generated id, use that for cookie
-  const id = createUser(inputEmail, inputPassword, userDB);
+  const id = createUser(inputEmail, bcrypt.hashSync(inputPassword, 10), userDB);
 
   res.cookie("user_id", id);
   // req.session.user_id = id
@@ -144,7 +150,6 @@ app.post("/logout", (req, res) => {
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
-
 
 // const userId = req.cookies.userId
 // const userId = req.session.userId
