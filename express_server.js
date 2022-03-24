@@ -64,7 +64,6 @@ app.put("/urls", missingAuthCheck, (req, res) => {
     userID: req.session.user_id,
     creationDate: curDate.toLocaleString(),
     visits: 0,
-    uniqueVisits: 0
   };
   return res.redirect("/login");
 });
