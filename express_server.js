@@ -3,7 +3,7 @@ const app = express();
 const PORT = 8080;
 const bodyParser = require("body-parser");
 const cookieSession = require("cookie-session");
-const methodOverride = require('method-override');
+const methodOverride = require("method-override");
 const bcrypt = require("bcryptjs");
 const {
   genStr,
@@ -17,7 +17,7 @@ const {
 // Using cooke-session for session management
 app.use(
   bodyParser.urlencoded({ extended: true }),
-  methodOverride('_method'),
+  methodOverride("_method"),
   cookieSession({
     name: "session",
     keys: ["bd31b612d6287c82396692ce1871d096"],
@@ -52,7 +52,7 @@ const alreadyAuthedCheck = function(req, res, next) {
     return res.redirect("/urls");
   }
   return next();
-}
+};
 
 // ===================================================
 // URL actions
