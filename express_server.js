@@ -63,7 +63,7 @@ const authUser = function(userEmail, userPassword, database) {
 };
 
 app.get("/", (req, res) => {
-  res.send("Hello!");
+  res.redirect("/urls")
 });
 
 // URL actions
@@ -90,6 +90,10 @@ app.post("/urls/:shortURL/delete", (req, res) => {
 
 // Get urls
 app.get("/urls", (req, res) => {
+  if (!req.cookies.user_id) {
+    return res.redirect("/login");
+  }
+  
   const templateVars = { urls: urlDatabase, user: userDB[req.cookies.user_id] };
   res.render("urls_index", templateVars);
 });
@@ -148,7 +152,7 @@ app.post("/login", (req, res) => {
     res.cookie("user_id", id);
     return res.redirect("/urls");
   }
-  return res.status(403).send("Email or password incorrect");
+  res.status(403).send("Email or password incorrect");
 });
 
 app.post("/register", (req, res) => {
@@ -164,7 +168,7 @@ app.post("/register", (req, res) => {
   const id = createUser(inputEmail, inputPassword, userDB);
 
   res.cookie("user_id", id);
-  return res.redirect("/urls");
+  res.redirect("/urls");
 });
 
 app.post("/logout", (req, res) => {
