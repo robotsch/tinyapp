@@ -62,6 +62,11 @@ const authUser = function(userEmail, userPassword, database) {
   }
 };
 
+const genUrlList = function(userID, database) {
+  console.log(userID, database)
+  
+}
+
 app.get("/", (req, res) => {
   res.redirect("/urls")
 });
@@ -93,7 +98,7 @@ app.get("/urls", (req, res) => {
   if (!req.cookies.user_id) {
     return res.redirect("/login");
   }
-  
+  genUrlList(req.cookies.user_id, userDB)
   const templateVars = { urls: urlDatabase, user: userDB[req.cookies.user_id] };
   res.render("urls_index", templateVars);
 });
