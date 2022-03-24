@@ -44,7 +44,7 @@ const emailCheck = function(userEmail, database) {
 };
 
 /**
- * Email/encrypted password check against a given database. 
+ * Email/encrypted password check against a given database.
  * @returns the user's ID if check passes
  */
 
@@ -63,14 +63,14 @@ const authUser = function(userEmail, userPassword, database) {
  * @returns filtered list of URLs belonging to given userID, based on given database
  */
 const urlsForUser = function(userID, database) {
-  const userUrls = {}
-  for(const entry in database) {
-    if(userID === database[entry].userID) {
-      userUrls[entry] = { longURL: database[entry].longURL }
+  const userUrls = {};
+  for (const entry in database) {
+    if (userID === database[entry].userID) {
+      userUrls[entry] = { longURL: database[entry].longURL };
     }
   }
-  return userUrls
-}
+  return userUrls;
+};
 
 module.exports = {
   genStr,
@@ -78,4 +78,4 @@ module.exports = {
   emailCheck,
   authUser,
   urlsForUser
-}
+};
