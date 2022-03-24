@@ -4,6 +4,7 @@ TinyApp is a full stack web application built with Node and Express that allows 
 
 ## Final Product
 
+The app has a simple login and registration page
 !["Screenshot of login page"](https://github.com/robotsch/tinyapp/blob/main/docs/login.PNG?raw=true)
 !["Screenshot of URL listing"](https://github.com/robotsch/tinyapp/blob/main/docs/url_list.PNG?raw=true)
 !["Screenshot of URL creation page"](https://github.com/robotsch/tinyapp/blob/main/docs/url_creation.PNG?raw=true)
