@@ -44,3 +44,11 @@ const urlsForUser = function(userID, database) {
   }
   return userUrls
 }
+
+module.exports = {
+  genStr,
+  createUser,
+  emailCheck,
+  authUser,
+  urlsForUser
+}
