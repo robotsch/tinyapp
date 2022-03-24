@@ -1,3 +1,5 @@
+const bcrypt = require("bcryptjs");
+
 const genStr = function(len) {
   const rndStr = "0123456789abcdefABCDEF";
   let result = "";
