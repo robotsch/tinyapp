@@ -8,7 +8,9 @@ app.use(bodyParser.urlencoded({ extended: true }), cookies());
 app.set("view engine", "ejs");
 
 const urlDatabase = {};
-const userDB = {};
+const userDB = {
+  1234: { id: 1234, email: "test@gmail.com", password: "test"}
+};
 
 const genStr = function(len) {
   const rndStr = "0123456789abcdefABCDEF";
@@ -102,6 +104,11 @@ app.get("/urls/new", (req, res) => {
 });
 
 app.get("/urls/:shortURL", (req, res) => {
+  
+  if(!(urlDatabase[req.params.shortURL].userID === req.cookies.user_id)) {
+    return res.status(400).send("Bad request");
+  }
+
   const templateVars = {
     shortURL: req.params.shortURL,
     longURL: urlDatabase[req.params.shortURL].longURL,
