@@ -12,10 +12,13 @@ const {
   urlsForUser,
 } = require("./helpers");
 
-app.use(bodyParser.urlencoded({ extended: true }), cookieSession( {
-  name: 'session',
-  keys: ['bd31b612d6287c82396692ce1871d096']
-}));
+app.use(
+  bodyParser.urlencoded({ extended: true }),
+  cookieSession({
+    name: "session",
+    keys: ["bd31b612d6287c82396692ce1871d096"],
+  })
+);
 app.set("view engine", "ejs");
 
 const urlDatabase = {};
@@ -27,6 +30,7 @@ app.get("/", (req, res) => {
 
 // URL actions
 app.post("/urls", (req, res) => {
+  // Fast fail check for nonlogin
   if (!req.session.user_id) {
     return res.redirect("/login");
   }
@@ -38,6 +42,7 @@ app.post("/urls", (req, res) => {
 });
 
 app.post("/urls/:shortURL/update", (req, res) => {
+  // Fast fail check for nonlogin
   if (!(urlDatabase[req.params.shortURL].userID === req.session.user_id)) {
     return res.status(400).send("Bad request");
   }
@@ -46,6 +51,7 @@ app.post("/urls/:shortURL/update", (req, res) => {
 });
 
 app.post("/urls/:shortURL/delete", (req, res) => {
+  // Fast fail check for nonlogin
   if (!(urlDatabase[req.params.shortURL].userID === req.session.user_id)) {
     return res.status(400).send("Bad request");
   }
@@ -55,6 +61,7 @@ app.post("/urls/:shortURL/delete", (req, res) => {
 
 // Get urls
 app.get("/urls", (req, res) => {
+  // Fast fail check for nonlogin
   if (!req.session.user_id) {
     return res.redirect("/login");
   }
@@ -63,8 +70,8 @@ app.get("/urls", (req, res) => {
   res.render("urls_index", templateVars);
 });
 
-// Change this to disallow non-logged in users
 app.get("/urls/new", (req, res) => {
+  // Fast fail check for nonlogin
   if (!req.session.user_id) {
     return res.redirect("/login");
   }
@@ -73,6 +80,7 @@ app.get("/urls/new", (req, res) => {
 });
 
 app.get("/urls/:shortURL", (req, res) => {
+  // Fast fail check for nonlogin
   if (!(urlDatabase[req.params.shortURL].userID === req.session.user_id)) {
     return res.status(400).send("Bad request");
   }
@@ -90,6 +98,7 @@ app.get("/u/:shortURL", (req, res) => {
 
 // Registration/auth
 app.get("/login", (req, res) => {
+  // Redirect to urls page if a session already exists
   if (req.session.user_id) {
     return res.redirect("/urls");
   }
@@ -98,10 +107,11 @@ app.get("/login", (req, res) => {
 });
 
 app.get("/register", (req, res) => {
-  const templateVars = { user: userDB[req.session.user_id] };
-  if (templateVars.user) {
-    res.redirect("/urls");
+  // Redirect to urls page if a session already exists
+  if (req.session.user_id) {
+    return res.redirect("/urls");
   }
+  const templateVars = { user: userDB[req.session.user_id] };
   res.render("user_register", templateVars);
 });
 
@@ -109,7 +119,6 @@ app.post("/login", (req, res) => {
   const inputEmail = req.body.email;
   const inputPassword = req.body.password;
   // Fast fail checks for missing input or nonexistent email
-  // TODO: Can I make this status code stuff DRY?
   if (!inputEmail || !inputPassword) return res.status(403).send("Bad request");
   if (!emailCheck(inputEmail, userDB))
     return res.status(403).send("Email or password incorrect");
@@ -117,9 +126,10 @@ app.post("/login", (req, res) => {
   // If authUser returns an id, login checks were successful
   const id = authUser(inputEmail, inputPassword, userDB);
   if (id) {
-    req.session.user_id = id
+    req.session.user_id = id;
     return res.redirect("/urls");
   }
+  // Default to fail
   res.status(403).send("Email or password incorrect");
 });
 
@@ -134,14 +144,16 @@ app.post("/register", (req, res) => {
 
   // createUser will return the newly generated id, use that for cookie
   const id = createUser(inputEmail, bcrypt.hashSync(inputPassword, 10), userDB);
-
-  console.log(req.session)
-  req.session.user_id = id
-  res.redirect("/urls");
+  if(id) {
+    req.session.user_id = id;
+    return res.redirect("/urls");
+  }
+  // Default to fail
+  res.status(403).send("Registration failed");
 });
 
 app.post("/logout", (req, res) => {
-  req.session = null
+  req.session = null;
   res.redirect("/login");
 });
 
