@@ -76,8 +76,14 @@ const alreadyAuthedCheck = function(req, res, next) {
 app.put("/urls", authCheckError, (req, res) => {
   const curDate = new Date();
   const newId = genStr(6)
+  // url bug fix, thanks Alex Reyne!
+  let safeURL = req.body.longURL;
+  if (!safeURL.slice(0, 5).includes('http')) {
+    safeURL = `https://${req.body.longURL}`
+  }
+  
   urlDatabase[newId] = {
-    longURL: req.body.longURL,
+    longURL: safeURL,
     userID: req.session.user_id,
     creationDate: curDate.toLocaleString(),
     visits: 0,
@@ -87,7 +93,12 @@ app.put("/urls", authCheckError, (req, res) => {
 
 // Update URL
 app.put("/urls/:shortURL/update", badPermissionCheck, (req, res) => {
-  urlDatabase[req.params.shortURL].longURL = req.body.longURL;
+  // url bug fix, thanks Alex Reyne!
+  let safeURL = req.body.longURL;
+  if (!safeURL.slice(0, 5).includes('http')) {
+    safeURL = `https://${req.body.longURL}`
+  }
+  urlDatabase[req.params.shortURL].longURL = safeURL;
   res.redirect("/urls");
 });
 
@@ -122,7 +133,6 @@ app.get("/urls/new", authCheckRedirect, (req, res) => {
 // Edit/analytics page for a given shortURL, middleware redirect if not logged in
 app.get("/urls/:shortURL", authCheckError, badPermissionCheck, (req, res) => {
   if(!urlDatabase[req.params.shortURL]) return res.status(404).send("<h1>The specified URL does not exist.</h1>")
-  console.log(urlDatabase[req.params.shortURL], urlDatabase[req.params.shortURL].longURL)
   const templateVars = {
     shortURL: req.params.shortURL,
     longURL: urlDatabase[req.params.shortURL].longURL,
