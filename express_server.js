@@ -39,7 +39,7 @@ const userDB = {};
 // Middleware to send a bad request error on permission mismatch
 const badPermissionCheck = function(req, res, next) {
   // Edge case check handling for url hacking to nonexistent URL
-  if(!urlDatabase[req.params.shortURL]) return res.status(404).send("<h1>URL not found</h1>")
+  if (!urlDatabase[req.params.shortURL]) return res.status(404).send("<h1>URL not found</h1>");
   if (!(urlDatabase[req.params.shortURL].userID === req.session.user_id)) {
     return res.status(403).send("<h1>You do not have permission to view this page.<h1>");
   }
@@ -75,11 +75,11 @@ const alreadyAuthedCheck = function(req, res, next) {
 // Create new URL and redirect after creation
 app.put("/urls", authCheckError, (req, res) => {
   const curDate = new Date();
-  const newId = genStr(6)
+  const newId = genStr(6);
   // url bug fix, thanks Alex Reyne!
   let safeURL = req.body.longURL;
   if (!safeURL.slice(0, 5).includes('http')) {
-    safeURL = `https://${req.body.longURL}`
+    safeURL = `https://${req.body.longURL}`;
   }
   
   urlDatabase[newId] = {
@@ -96,7 +96,7 @@ app.put("/urls/:shortURL/update", badPermissionCheck, (req, res) => {
   // url bug fix, thanks Alex Reyne!
   let safeURL = req.body.longURL;
   if (!safeURL.slice(0, 5).includes('http')) {
-    safeURL = `https://${req.body.longURL}`
+    safeURL = `https://${req.body.longURL}`;
   }
   urlDatabase[req.params.shortURL].longURL = safeURL;
   res.redirect("/urls");
@@ -113,8 +113,8 @@ app.delete("/urls/:shortURL/delete", badPermissionCheck, (req, res) => {
 // ===================================================
 // Redirect to appropriate destination
 app.get("/", (req, res) => {
-  if(req.session.user_id) return res.redirect("/urls")
-  if(!req.session.user_id) return res.redirect("/login")
+  if (req.session.user_id) return res.redirect("/urls");
+  if (!req.session.user_id) return res.redirect("/login");
 });
 
 // URL Index, middleware error msg if not logged in
@@ -132,7 +132,7 @@ app.get("/urls/new", authCheckRedirect, (req, res) => {
 
 // Edit/analytics page for a given shortURL, middleware redirect if not logged in
 app.get("/urls/:shortURL", authCheckError, badPermissionCheck, (req, res) => {
-  if(!urlDatabase[req.params.shortURL]) return res.status(404).send("<h1>The specified URL does not exist.</h1>")
+  if (!urlDatabase[req.params.shortURL]) return res.status(404).send("<h1>The specified URL does not exist.</h1>");
   const templateVars = {
     shortURL: req.params.shortURL,
     longURL: urlDatabase[req.params.shortURL].longURL,
@@ -145,7 +145,7 @@ app.get("/urls/:shortURL", authCheckError, badPermissionCheck, (req, res) => {
 
 // Redirect to shortURL's longURL - no permission check
 app.get("/u/:shortURL", (req, res) => {
-  if(!urlDatabase[req.params.shortURL]) return res.status(404).send("<h1>The specified URL does not exist.</h1>")
+  if (!urlDatabase[req.params.shortURL]) return res.status(404).send("<h1>The specified URL does not exist.</h1>");
   urlDatabase[req.params.shortURL].visits += 1;
   res.redirect(urlDatabase[req.params.shortURL].longURL);
 });
@@ -207,7 +207,7 @@ app.post("/register", (req, res) => {
 // Nullify login session
 app.post("/logout", (req, res) => {
   req.session = null;
-  res.redirect("/urls");
+  res.redirect("/login");
 });
 
 // ===================================================
